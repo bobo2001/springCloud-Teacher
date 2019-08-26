@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jk.dao.TreeDao">
+
+    <select id="findUserPage" resultType="com.jk.model.BookBean" parameterType="map">
+        select * from  t_project
+		limit #{start},#{rows}
+    </select>
+
+    <insert id="saveOrUpdate" parameterType="com.jk.model.BookBean">
+       insert into t_project (name,detail,createTime,price,phone) values(#{name},#{detail},#{createTime},#{price},#{phone})
+    </insert>
+
+    <delete id="delBook" parameterType="int">
+        delete from t_project where id in
+        <foreach collection="array" index="index" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateRole" parameterType="com.jk.model.BookBean" >
+		update t_project u set u.name=#{name},u.price=#{price},u.detail=#{detail},u.createTime=#{createTime},u.phone=#{phone} where u.id=#{id}
+	</update>
+
+</mapper>

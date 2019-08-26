@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/easyui1.5/themes/icon.css">
+    <link rel="stylesheet" href="/js/easyui1.5/themes/default/easyui.css">
+
+    <script src="/js/easyui1.5/jquery.min.js"></script>
+    <script src="/js/easyui1.5/jquery.easyui.min.js"></script>
+    <script src="/js/easyui1.5/locale/easyui-lang-zh_CN.js"></script>
+</head>
+<body>
+
+<div id="toolbar">
+    <a id="addBtn" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">新增</a>
+</div>
+
+<div id="projectDialog" class="easyui-dialog" data-options="title:'新增',iconCls:'icon-add',closed:true,modal:true,
+     buttons:[{
+        text:'保存',
+        iconCls:'icon-save',
+        handler:function(){
+           saveBook();
+        }
+     },{
+       text:'关闭',
+        iconCls:'icon-cancel',
+        handler:function(){
+           closeBookDialog();
+        }
+     }]" style="width:400px;height:400px;">
+
+    <form id="projectFrom" method="post">
+        <table>
+            <tr>
+                <td>项目名</td>
+                <td>
+                    <input type="hidden" name="id">
+                    <input class="easyui-textbox" name="name">
+                </td>
+            <tr>
+                <td>联系电话</td>
+                <td>
+                    <input class="easyui-numberspinner" name="phone">
+                </td>
+            </tr>
+            <tr>
+                <td>创建时间</td>
+                <td>
+                    <input class="easyui-datebox" name="createTime">
+                </td>
+            </tr>
+            <tr>
+                <td>图书价格</td>
+                <td>
+                    <input class="easyui-textbox" name="price">
+                </td>
+            </tr>
+            <tr>
+                <td>图书介绍</td>
+                <td>
+                    <input class="easyui-textbox" name="detail">
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<table id="bookTable"></table>
+</body>
+
+<script type="text/javascript">
+
+    /*查询*/
+    $("#bookTable").datagrid({
+        url:'/query',
+        fit:true,
+        pagination:true,
+        pageSize:2,
+        pageList:[2,4,10,30,50],
+        toolbar:"#toolbar",
+        columns:[
+            [
+            {field:"000",checkbox:true},
+            {field:'id',title:'图书编号'},
+            {field:'name',title:'图书名称'},
+            {field:'createTime',title:'生日'},
+            {field:'detail',title:'图书介绍'},
+            {field:'price',title:'图书价钱'},
+            {field:'phone',title:'电话'},
+            {field:'123',title:'操作',formatter:function(value,row,index){
+                    return '<a href="javascript:del('+row.id+')">删除</a>  |  <a href="javascript:update('+row.id+')">修改</a>'
+                }}
+        ]
+        ]
+    })
+
+
+    function closeBookDialog(){
+        $("#projectDialog").dialog('close');
+    }
+
+
+    $("#addBtn").click(function(){
+        $("#projectFrom").form("reset");
+        $("#projectDialog").dialog({
+            title:'新增',
+            iconCls:'icon-add',
+            closed:false
+        });
+
+    })
+
+    function saveBook(){
+        $.ajax({
+            url:"/saveMongo",
+            type:"post",
+            data:$("#projectFrom").serialize(),
+            success:function(data){
+                if (data) {
+                    closeBookDialog();
+
+                    $("#bookTable").datagrid('reload');
+                }
+                else{
+                    $.messager.alert('提示','新增失败','warning');
+                }
+            }
+        })
+    }
+
+    /*删除*/
+    function del(id){
+        $.messager.confirm('确认','您确认要删除吗？',function(r){
+            if(r){
+                $.ajax({
+                    url:'/delBook.do',
+                    type:'post',
+                    data:{ids:id},
+                    dataType:'json',
+                    success:function(data){
+                        if(data){
+                            $("#bookTable").datagrid('reload');
+                        }else{
+                            $.messager.alert('提示','删除失败','info');
+                        }
+                    }
+
+                })
+            }
+
+        })
+
+    }
+
+    function update(id){
+        $.ajax({
+            url:'/findBookById',
+            type:"post",
+            data:{
+                id:id
+            },
+            dataType:"json",
+            success:function(data){
+                $("#projectFrom").form('load',data);
+            }
+        })
+        $("#projectDialog").dialog({
+            title:'修改',
+            iconCls:'icon-edit',
+            closed:false
+        })
+
+    }
+
+
+</script>
+
+
+
+</html>
